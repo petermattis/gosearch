@@ -13,7 +13,7 @@
 // permissions and limitations under the License. See the AUTHORS file
 // for names of contributors.
 
-package main
+package fsevents
 
 /*
 #cgo LDFLAGS: -framework CoreServices
@@ -98,8 +98,8 @@ type EventID C.FSEventStreamEventId
 
 // EventID has type UInt64 but this constant is represented as -1
 // which is represented by 63 1's in memory
-const fseventsNow EventID = (1 << 64) - 1
-const fseventsAll EventID = 0
+const Now EventID = (1 << 64) - 1
+const All EventID = 0
 
 // Event ...
 type Event struct {
@@ -116,7 +116,7 @@ type Stream struct {
 }
 
 // New ...
-func NewFSEvents(since EventID, interval time.Duration, flags CreateFlags, paths ...string) *Stream {
+func New(since EventID, interval time.Duration, flags CreateFlags, paths ...string) *Stream {
 	cpaths := C.CFArrayCreateMutable(nil, 0, &C.kCFTypeArrayCallBacks)
 	defer C.CFRelease(C.CFTypeRef(cpaths))
 
@@ -163,6 +163,11 @@ func (s Stream) Paths() []string {
 		}
 	}
 	return paths
+}
+
+// LatestID ...
+func (s Stream) LatestID() EventID {
+	return EventID(C.FSEventStreamGetLatestEventId(s.cstream))
 }
 
 // Start ...
